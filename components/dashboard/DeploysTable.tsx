@@ -15,11 +15,11 @@ export function DeploysTable() {
 
   return (
     <Card padding="p-[15px]">
-      <div className="text-[13.5px] font-semibold mb-[10px]">So&apos;nggi deploylar</div>
+      <div className="text-[13.5px] font-semibold mb-[10px]">So&apos;nggi PM2 ishga tushishlar</div>
       <div className="grid grid-cols-[1.4fr_0.8fr_0.7fr_1fr_0.9fr] gap-2 text-[10px] text-text-3 uppercase tracking-[0.05em] pb-2 border-b border-border-1">
-        <span>Loyiha</span>
-        <span>Branch</span>
-        <span>Natija</span>
+        <span>Jarayon</span>
+        <span>Manba</span>
+        <span>Holat</span>
         <span>Kim</span>
         <span className="text-right">Vaqt</span>
       </div>

@@ -1,7 +1,6 @@
 import type {
   AlertRow,
   AuditRow,
-  CpuPoint,
   DbRow,
   DeployPipelineStep,
   DeployRow,
@@ -9,76 +8,18 @@ import type {
   EmailAccountRow,
   FileRow,
   LogLine,
-  ProcessRow,
   ProjectRow,
-  ServerRow,
   SslRow,
   TeamRow,
 } from "./types";
-
-export const serversRaw: ServerRow[] = [
-  {
-    id: "contabo-de-01",
-    name: "contabo-de-01",
-    ip: "194.163.45.12",
-    location: "Germaniya · Nyurnberg",
-    os: "Ubuntu 22.04",
-    status: "online",
-    tags: ["Production", "PM2", "Nginx"],
-    cpu: 42,
-    ram: 61,
-    disk: 38,
-    projects: 4,
-    uptime: "47 kun",
-    uptimePct: "99.98%",
-    network: "24.6 MB/s",
-    availability: "99.98%",
-    load: "1.24, 1.08, 0.97",
-  },
-  {
-    id: "contabo-de-02",
-    name: "contabo-de-02",
-    ip: "194.163.45.31",
-    location: "Germaniya · Nyurnberg",
-    os: "Ubuntu 22.04",
-    status: "online",
-    tags: ["Staging", "PM2"],
-    cpu: 18,
-    ram: 34,
-    disk: 22,
-    projects: 2,
-    uptime: "12 kun",
-    uptimePct: "99.91%",
-    network: "3.1 MB/s",
-    availability: "99.91%",
-    load: "0.41, 0.38, 0.35",
-  },
-  {
-    id: "contabo-de-03",
-    name: "contabo-de-03",
-    ip: "194.163.45.58",
-    location: "Germaniya · Frankfurt",
-    os: "Debian 12",
-    status: "offline",
-    tags: ["Backup"],
-    cpu: 0,
-    ram: 0,
-    disk: 71,
-    projects: 0,
-    uptime: "—",
-    uptimePct: "94.2%",
-    network: "0 MB/s",
-    availability: "94.2%",
-    load: "—",
-  },
-];
+import { VPS_CONTABO_ID } from "./constants";
 
 export const projRaw: ProjectRow[] = [
   {
     id: "navbat-bot",
     name: "navbat-bot",
     type: "bot",
-    vps: "contabo-de-01",
+    vps: VPS_CONTABO_ID,
     status: "running",
     tags: ["Telegram", "Node.js"],
     lastDeploy: "2 soat oldin",
@@ -87,7 +28,7 @@ export const projRaw: ProjectRow[] = [
     id: "navbat-web",
     name: "navbat-web",
     type: "web",
-    vps: "contabo-de-01",
+    vps: VPS_CONTABO_ID,
     status: "running",
     tags: ["Next.js", "TypeScript"],
     lastDeploy: "18 daqiqa oldin",
@@ -96,7 +37,7 @@ export const projRaw: ProjectRow[] = [
     id: "core-api",
     name: "core-api",
     type: "api",
-    vps: "contabo-de-01",
+    vps: VPS_CONTABO_ID,
     status: "running",
     tags: ["FastAPI", "PostgreSQL"],
     lastDeploy: "1 kun oldin",
@@ -105,7 +46,7 @@ export const projRaw: ProjectRow[] = [
     id: "kassa-bot",
     name: "kassa-bot",
     type: "bot",
-    vps: "contabo-de-02",
+    vps: VPS_CONTABO_ID,
     status: "stopped",
     tags: ["Telegram", "Python"],
     lastDeploy: "5 kun oldin",
@@ -114,7 +55,7 @@ export const projRaw: ProjectRow[] = [
     id: "landing-uz",
     name: "landing-uz",
     type: "web",
-    vps: "contabo-de-02",
+    vps: VPS_CONTABO_ID,
     status: "running",
     tags: ["Next.js"],
     lastDeploy: "3 kun oldin",
@@ -123,22 +64,11 @@ export const projRaw: ProjectRow[] = [
     id: "analytics-api",
     name: "analytics-api",
     type: "api",
-    vps: "contabo-de-01",
+    vps: VPS_CONTABO_ID,
     status: "error",
     tags: ["FastAPI", "Redis"],
     lastDeploy: "6 soat oldin",
   },
-];
-
-export const procRaw: ProcessRow[] = [
-  { id: "p1", pmid: 0, name: "navbat-bot", serverId: "contabo-de-01", cpu: "2.1%", mem: "84mb", restarts: 0, status: "online", uptime: "47d" },
-  { id: "p2", pmid: 1, name: "navbat-web", serverId: "contabo-de-01", cpu: "5.4%", mem: "212mb", restarts: 1, status: "online", uptime: "12d" },
-  { id: "p3", pmid: 2, name: "core-api", serverId: "contabo-de-01", cpu: "8.9%", mem: "156mb", restarts: 0, status: "online", uptime: "47d" },
-  { id: "p4", pmid: 3, name: "analytics-api", serverId: "contabo-de-01", cpu: "0%", mem: "0mb", restarts: 14, status: "errored", uptime: "0m" },
-  { id: "p5", pmid: 4, name: "cron-jobs", serverId: "contabo-de-01", cpu: "0.3%", mem: "42mb", restarts: 0, status: "online", uptime: "47d" },
-  { id: "p6", pmid: 5, name: "webhook-listener", serverId: "contabo-de-01", cpu: "1.1%", mem: "61mb", restarts: 2, status: "online", uptime: "9d" },
-  { id: "p7", pmid: 0, name: "kassa-bot", serverId: "contabo-de-02", cpu: "0%", mem: "0mb", restarts: 0, status: "stopped", uptime: "0m" },
-  { id: "p8", pmid: 1, name: "landing-uz", serverId: "contabo-de-02", cpu: "1.8%", mem: "98mb", restarts: 0, status: "online", uptime: "12d" },
 ];
 
 export const deploys: DeployRow[] = [
@@ -151,8 +81,8 @@ export const deploys: DeployRow[] = [
 ];
 
 export const alerts: AlertRow[] = [
-  { id: "a1", level: "error", text: "analytics-api jarayoni 14 marta qayta ishga tushdi", time: "6 soat oldin", href: "/servers/contabo-de-01" },
-  { id: "a2", level: "warning", text: "contabo-de-01 disk hajmi 80% dan oshdi", time: "1 kun oldin", href: "/servers/contabo-de-01" },
+  { id: "a1", level: "error", text: "analytics-api jarayoni 14 marta qayta ishga tushdi", time: "6 soat oldin", href: `/servers/${VPS_CONTABO_ID}` },
+  { id: "a2", level: "warning", text: "vps contabo disk hajmi 80% dan oshdi", time: "1 kun oldin", href: `/servers/${VPS_CONTABO_ID}` },
   { id: "a3", level: "warning", text: "shop.uz SSL sertifikati 12 kundan keyin tugaydi", time: "1 kun oldin", href: "/ssl" },
   { id: "a4", level: "info", text: "navbat-web muvaffaqiyatli deploy qilindi", time: "18 daqiqa oldin", href: "/deploy" },
 ];
@@ -213,7 +143,7 @@ export const teamRows: TeamRow[] = [
 export const auditRows: AuditRow[] = [
   { id: "au1", user: "Aslbek", action: "DEPLOY", target: "navbat-web", ip: "194.163.45.12", time: "18 daqiqa oldin" },
   { id: "au2", user: "Sherzod", action: "RESTART", target: "kassa-bot", ip: "194.163.45.31", time: "1 soat oldin" },
-  { id: "au3", user: "Aslbek", action: "SSH", target: "contabo-de-01", ip: "194.163.45.12", time: "3 soat oldin" },
+  { id: "au3", user: "Aslbek", action: "SSH", target: VPS_CONTABO_ID, ip: "194.163.45.12", time: "3 soat oldin" },
   { id: "au4", user: "Aslbek", action: "CREATE", target: "analytics-api", ip: "194.163.45.12", time: "1 kun oldin" },
   { id: "au5", user: "Sherzod", action: "DELETE", target: "old-project.uz", ip: "194.163.45.58", time: "2 kun oldin" },
 ];
@@ -242,7 +172,7 @@ export const deployPipeline: DeployPipelineStep[] = [
 
 export const logLines: LogLine[] = [
   { id: "ll1", ts: "14:12:01", level: "info", message: "GET /api/health 200 4ms" },
-  { id: "ll2", ts: "14:12:03", level: "debug", message: "cache hit: servers:contabo-de-01" },
+  { id: "ll2", ts: "14:12:03", level: "debug", message: `cache hit: servers:${VPS_CONTABO_ID}` },
   { id: "ll3", ts: "14:12:05", level: "warning", message: "rate limit nearing threshold for 194.163.45.200" },
   { id: "ll4", ts: "14:12:08", level: "error", message: "ECONNRESET on upstream redis connection" },
   { id: "ll5", ts: "14:12:10", level: "info", message: "POST /api/deploy 202 112ms" },
@@ -250,24 +180,6 @@ export const logLines: LogLine[] = [
   { id: "ll7", ts: "14:12:20", level: "info", message: "GET /api/projects 200 9ms" },
   { id: "ll8", ts: "14:12:25", level: "error", message: "analytics-api crashed: out of memory" },
 ];
-
-function buildSeries(points: number, base: number, variance: number): CpuPoint[] {
-  const arr: CpuPoint[] = [];
-  for (let i = 0; i < points; i++) {
-    const value = Math.max(
-      2,
-      Math.min(98, Math.round(base + Math.sin(i / 3) * variance + (Math.random() - 0.5) * variance)),
-    );
-    arr.push({ t: `${i}`, value });
-  }
-  return arr;
-}
-
-export const cpuSeries: Record<"1h" | "24h" | "7d", CpuPoint[]> = {
-  "1h": buildSeries(12, 42, 10),
-  "24h": buildSeries(24, 38, 16),
-  "7d": buildSeries(28, 35, 20),
-};
 
 export const SETTINGS = {
   profil: { name: "Aslbek Ismatov", email: "admin@corepanel.uz", role: "Admin" },

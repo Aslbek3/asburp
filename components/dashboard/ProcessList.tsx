@@ -8,6 +8,7 @@ import { useProcesses } from "@/hooks/useDashboardData";
 import { useLogStore } from "@/store/logStore";
 import { toast } from "sonner";
 import type { ProcessStatus } from "@/lib/types";
+import { VPS_CONTABO_ID } from "@/lib/constants";
 
 const statusTone: Record<ProcessStatus, { color: string; bg: string; label: string }> = {
   online: { color: "text-green", bg: "bg-green-soft", label: "Online" },
@@ -25,7 +26,7 @@ export function ProcessList() {
   const router = useRouter();
   const setLogSearch = useLogStore((s) => s.setSearch);
   const { data } = useProcesses();
-  const processes = (data ?? []).filter((p) => p.serverId === "contabo-de-01");
+  const processes = (data ?? []).filter((p) => p.serverId === VPS_CONTABO_ID);
 
   const openLogs = (processName: string) => {
     setLogSearch(processName);
@@ -43,7 +44,7 @@ export function ProcessList() {
         </div>
         <button
           type="button"
-          onClick={() => router.push("/servers/contabo-de-01")}
+          onClick={() => router.push(`/servers/${VPS_CONTABO_ID}`)}
           className="text-[11.5px] text-accent font-medium bg-transparent border-none cursor-pointer hover:underline"
         >
           Barchasi →

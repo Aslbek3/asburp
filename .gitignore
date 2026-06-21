@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# remote vps connection list (ips/hostnames)
+/data/vps-connections.json
+
 # vercel
 .vercel
 

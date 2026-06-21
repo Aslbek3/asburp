@@ -2,5 +2,5 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchServers } from "@/lib/api";
 
 export function useServers() {
-  return useQuery({ queryKey: ["servers"], queryFn: fetchServers });
+  return useQuery({ queryKey: ["servers"], queryFn: fetchServers, refetchInterval: 15_000 });
 }

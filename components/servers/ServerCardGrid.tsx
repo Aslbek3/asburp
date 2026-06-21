@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Server as ServerIcon, Plus, ScrollText, RotateCw, Square } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { Card } from "@/components/shared/Card";
 import { ProgressBar, colorForPct } from "@/components/shared/ProgressBar";
 import { Skeleton } from "@/components/shared/Skeleton";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { AddServerModal } from "./AddServerModal";
 
 const textColorClass: Record<"red" | "amber" | "accent" | "green", string> = {
   red: "text-red",
@@ -23,6 +25,7 @@ import { cn } from "@/lib/utils";
 export function ServerCardGrid() {
   const { data, isLoading } = useServers();
   const router = useRouter();
+  const [addOpen, setAddOpen] = useState(false);
   const canManage = useCan("manage");
   const search = useServerStore((s) => s.search);
   const statusFilter = useServerStore((s) => s.statusFilter);
@@ -183,7 +186,7 @@ export function ServerCardGrid() {
       {canManage && (
         <button
           type="button"
-          onClick={() => toast.info("Yangi server qo'shish oynasi ochiladi")}
+          onClick={() => setAddOpen(true)}
           className="flex flex-col items-center justify-center gap-[9px] min-h-[150px] bg-transparent border-[1.5px] border-dashed border-border-2 rounded-xl cursor-pointer text-text-3 hover:border-accent hover:text-accent"
         >
           <div className="w-10 h-10 rounded-full bg-bg-2 flex items-center justify-center">
@@ -192,6 +195,7 @@ export function ServerCardGrid() {
           <span className="text-[12.5px] font-medium">Yangi server qo&apos;shish</span>
         </button>
       )}
+      <AddServerModal open={addOpen} onOpenChange={setAddOpen} />
     </div>
   );
 }

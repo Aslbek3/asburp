@@ -23,7 +23,7 @@ export function CpuChart() {
       <div className="flex items-start justify-between mb-[14px]">
         <div>
           <div className="text-[13.5px] font-semibold">CPU tarixi</div>
-          <div className="text-[11px] text-text-3 mt-[2px]">contabo-de-01 · foiz</div>
+          <div className="text-[11px] text-text-3 mt-[2px]">vps contabo · foiz</div>
         </div>
         <SegmentedControl
           options={[

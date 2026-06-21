@@ -4,11 +4,16 @@ import {
   fetchCpuSeries,
   fetchDeploys,
   fetchDomains,
+  fetchMetrics,
   fetchProcesses,
 } from "@/lib/api";
 
+export function useMetrics() {
+  return useQuery({ queryKey: ["metrics"], queryFn: fetchMetrics, refetchInterval: 1_000 });
+}
+
 export function useProcesses() {
-  return useQuery({ queryKey: ["processes"], queryFn: fetchProcesses });
+  return useQuery({ queryKey: ["processes"], queryFn: fetchProcesses, refetchInterval: 15_000 });
 }
 
 export function useDeploys() {
@@ -27,5 +32,6 @@ export function useCpuSeries(range: "1h" | "24h" | "7d") {
   return useQuery({
     queryKey: ["cpu-series", range],
     queryFn: () => fetchCpuSeries(range),
+    refetchInterval: 30_000,
   });
 }

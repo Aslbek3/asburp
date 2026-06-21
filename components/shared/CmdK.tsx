@@ -6,12 +6,14 @@ import { Command } from "cmdk";
 import { toast } from "sonner";
 import { navGroups } from "@/lib/nav";
 import { useUiStore } from "@/store/uiStore";
-import { serversRaw, projRaw } from "@/lib/mock-data";
+import { projRaw } from "@/lib/mock-data";
+import { useServers } from "@/hooks/useServers";
 
 export function CmdK() {
   const open = useUiStore((s) => s.cmdkOpen);
   const setOpen = useUiStore((s) => s.setCmdkOpen);
   const router = useRouter();
+  const { data: servers = [] } = useServers();
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -74,7 +76,7 @@ export function CmdK() {
               heading="Serverlar"
               className="text-[10px] uppercase tracking-[0.05em] text-text-3 px-2 pt-2 pb-1"
             >
-              {serversRaw.map((s) => (
+              {servers.map((s) => (
                 <Command.Item
                   key={s.id}
                   onSelect={() => go(`/servers/${s.id}`)}
