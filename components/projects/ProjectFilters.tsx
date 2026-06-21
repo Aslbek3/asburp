@@ -22,7 +22,7 @@ export function ProjectFilters() {
         value={typeFilter}
         onChange={setTypeFilter}
       />
-      <div className="flex-1 flex items-center gap-2 h-[34px] px-[11px] bg-bg-1 border border-border-1 rounded-lg">
+      <div className="flex-1 flex items-center gap-2 h-[34px] px-[11px] bg-bg-1 border border-border-1 rounded-lg focus-within:border-accent">
         <Search size={14} strokeWidth={2} className="text-text-3" />
         <input
           value={search}

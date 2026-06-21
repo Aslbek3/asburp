@@ -77,7 +77,7 @@ export function CmdK() {
               {serversRaw.map((s) => (
                 <Command.Item
                   key={s.id}
-                  onSelect={() => go("/servers")}
+                  onSelect={() => go(`/servers/${s.id}`)}
                   className="flex items-center gap-[10px] px-2 py-2 rounded-[7px] text-[12.5px] font-mono cursor-pointer data-[selected=true]:bg-accent-soft data-[selected=true]:text-accent"
                 >
                   {s.name}

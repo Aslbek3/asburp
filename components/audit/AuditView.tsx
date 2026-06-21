@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Search, Filter, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
+import { SkeletonRow } from "@/components/shared/Skeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useAudit } from "@/hooks/useMisc";
 import type { AuditAction } from "@/lib/types";
 
@@ -16,7 +18,7 @@ const actionTone: Record<AuditAction, { bg: string; color: string }> = {
 };
 
 export function AuditView() {
-  const { data } = useAudit();
+  const { data, isLoading } = useAudit();
   const [search, setSearch] = useState("");
   const filtered = (data ?? []).filter(
     (a) =>
@@ -27,7 +29,7 @@ export function AuditView() {
   return (
     <div className="flex flex-col gap-[14px]">
       <div className="flex items-center gap-[10px]">
-        <div className="flex-1 flex items-center gap-2 h-[34px] px-[11px] bg-bg-1 border border-border-1 rounded-lg">
+        <div className="flex-1 flex items-center gap-2 h-[34px] px-[11px] bg-bg-1 border border-border-1 rounded-lg focus-within:border-accent">
           <Search size={14} strokeWidth={2} className="text-text-3" />
           <input
             value={search}
@@ -66,6 +68,7 @@ export function AuditView() {
             </tr>
           </thead>
           <tbody>
+            {isLoading && Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={5} />)}
             {filtered.map((a) => {
               const tone = actionTone[a.action];
               return (
@@ -82,6 +85,13 @@ export function AuditView() {
                 </tr>
               );
             })}
+            {!isLoading && filtered.length === 0 && (
+              <tr>
+                <td colSpan={5}>
+                  <EmptyState title="Yozuv topilmadi" description="Qidiruvga mos audit yozuvi yo'q." />
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </Card>

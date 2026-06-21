@@ -30,6 +30,7 @@ export function IconButton({
     <button
       type="button"
       title={title}
+      aria-label={title}
       onClick={onClick}
       style={{ width: size, height: size }}
       className={cn(

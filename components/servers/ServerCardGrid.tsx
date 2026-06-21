@@ -5,6 +5,8 @@ import { Server as ServerIcon, Plus, ScrollText, RotateCw, Square } from "lucide
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
 import { ProgressBar, colorForPct } from "@/components/shared/ProgressBar";
+import { Skeleton } from "@/components/shared/Skeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 const textColorClass: Record<"red" | "amber" | "accent" | "green", string> = {
   red: "text-red",
@@ -15,11 +17,13 @@ const textColorClass: Record<"red" | "amber" | "accent" | "green", string> = {
 import { IconButton } from "@/components/shared/IconButton";
 import { useServers } from "@/hooks/useServers";
 import { useServerStore } from "@/store/serverStore";
+import { useCan } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
 export function ServerCardGrid() {
-  const { data } = useServers();
+  const { data, isLoading } = useServers();
   const router = useRouter();
+  const canManage = useCan("manage");
   const search = useServerStore((s) => s.search);
   const statusFilter = useServerStore((s) => s.statusFilter);
   const selectedServerId = useServerStore((s) => s.selectedServerId);
@@ -33,6 +37,29 @@ export function ServerCardGrid() {
     const matchesStatus = statusFilter === "all" || s.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-2 gap-[14px]">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} padding="p-4">
+            <div className="flex items-center gap-[11px] mb-[14px]">
+              <Skeleton className="w-9 h-9 rounded-[9px]" />
+              <div className="flex-1">
+                <Skeleton className="h-4 w-28 mb-[6px]" />
+                <Skeleton className="h-3 w-36" />
+              </div>
+            </div>
+            <Skeleton className="h-12 w-full" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (filtered.length === 0) {
+    return <EmptyState title="Server topilmadi" description="Qidiruv yoki filtr shartlariga mos server yo'q." />;
+  }
 
   return (
     <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-2 gap-[14px]">
@@ -130,13 +157,15 @@ export function ServerCardGrid() {
                     title="Monitoring"
                     onClick={() => router.push(`/servers/${sv.id}`)}
                   />
-                  <IconButton
-                    icon={RotateCw}
-                    title="Restart"
-                    hover="accent"
-                    onClick={() => toast.success(`${sv.name} qayta ishga tushirildi`)}
-                  />
-                  {!isOffline && (
+                  {canManage && (
+                    <IconButton
+                      icon={RotateCw}
+                      title="Restart"
+                      hover="accent"
+                      onClick={() => toast.success(`${sv.name} qayta ishga tushirildi`)}
+                    />
+                  )}
+                  {canManage && !isOffline && (
                     <IconButton
                       icon={Square}
                       title="Diagnostika"
@@ -151,16 +180,18 @@ export function ServerCardGrid() {
         );
       })}
 
-      <button
-        type="button"
-        onClick={() => toast.info("Yangi server qo'shish oynasi ochiladi")}
-        className="flex flex-col items-center justify-center gap-[9px] min-h-[150px] bg-transparent border-[1.5px] border-dashed border-border-2 rounded-xl cursor-pointer text-text-3 hover:border-accent hover:text-accent"
-      >
-        <div className="w-10 h-10 rounded-full bg-bg-2 flex items-center justify-center">
-          <Plus size={20} strokeWidth={1.8} />
-        </div>
-        <span className="text-[12.5px] font-medium">Yangi server qo&apos;shish</span>
-      </button>
+      {canManage && (
+        <button
+          type="button"
+          onClick={() => toast.info("Yangi server qo'shish oynasi ochiladi")}
+          className="flex flex-col items-center justify-center gap-[9px] min-h-[150px] bg-transparent border-[1.5px] border-dashed border-border-2 rounded-xl cursor-pointer text-text-3 hover:border-accent hover:text-accent"
+        >
+          <div className="w-10 h-10 rounded-full bg-bg-2 flex items-center justify-center">
+            <Plus size={20} strokeWidth={1.8} />
+          </div>
+          <span className="text-[12.5px] font-medium">Yangi server qo&apos;shish</span>
+        </button>
+      )}
     </div>
   );
 }

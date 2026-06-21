@@ -5,15 +5,18 @@ import { Lock, ShieldCheck, RefreshCw } from "lucide-react";
 import * as Switch from "@radix-ui/react-switch";
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
+import { SkeletonRow } from "@/components/shared/Skeleton";
 import { useSsl } from "@/hooks/useMisc";
+import { useCan } from "@/lib/permissions";
 
 export function SslView() {
-  const { data } = useSsl();
+  const { data, isLoading } = useSsl();
   const rows = [...(data ?? [])].sort((a, b) => a.daysLeft - b.daysLeft);
   const active = rows.length;
   const expiringSoon = rows.filter((r) => r.daysLeft <= 14).length;
   const autoRenewCount = rows.filter((r) => r.autoRenew).length;
   const [renewMap, setRenewMap] = useState<Record<string, boolean>>({});
+  const canManage = useCan("manage");
 
   const isAutoRenew = (id: string, fallback: boolean) =>
     renewMap[id] !== undefined ? renewMap[id] : fallback;
@@ -38,6 +41,7 @@ export function SslView() {
             </tr>
           </thead>
           <tbody>
+            {isLoading && Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} cols={5} />)}
             {rows.map((s) => {
               const renew = isAutoRenew(s.id, s.autoRenew);
               const color = s.daysLeft <= 14 ? "text-red" : s.daysLeft <= 30 ? "text-amber" : "text-green";
@@ -53,11 +57,12 @@ export function SslView() {
                   <td className="px-4 py-3">
                     <Switch.Root
                       checked={renew}
+                      disabled={!canManage}
                       onCheckedChange={(v) => {
                         setRenewMap((prev) => ({ ...prev, [s.id]: v }));
                         toast.success(`${s.domain}: auto-renewal ${v ? "yoqildi" : "o'chirildi"}`);
                       }}
-                      className="w-9 h-5 rounded-full bg-bg-3 border border-border-1 relative data-[state=checked]:bg-accent cursor-pointer"
+                      className="w-9 h-5 rounded-full bg-bg-3 border border-border-1 relative data-[state=checked]:bg-accent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Switch.Thumb className="block w-[14px] h-[14px] bg-white rounded-full transition-transform translate-x-[3px] will-change-transform data-[state=checked]:translate-x-[18px]" />
                     </Switch.Root>

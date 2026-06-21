@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore, useAuthHydrated } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
@@ -10,15 +10,16 @@ import { CmdK } from "@/components/shared/CmdK";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const loggedIn = useAuthStore((s) => s.loggedIn);
+  const hydrated = useAuthHydrated();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const closeSidebar = useUiStore((s) => s.closeSidebar);
   const router = useRouter();
 
   useEffect(() => {
-    if (!loggedIn) router.replace("/login");
-  }, [loggedIn, router]);
+    if (hydrated && !loggedIn) router.replace("/login");
+  }, [hydrated, loggedIn, router]);
 
-  if (!loggedIn) return null;
+  if (!hydrated || !loggedIn) return null;
 
   return (
     <div className="flex h-screen w-full overflow-hidden">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Globe } from "lucide-react";
 import { Card } from "@/components/shared/Card";
 import { useDomainsMini } from "@/hooks/useDashboardData";
@@ -11,13 +12,18 @@ const sslTone: Record<string, { bg: string; color: string; label: string }> = {
 };
 
 export function DomainsMini() {
+  const router = useRouter();
   const { data } = useDomainsMini();
 
   return (
     <Card padding="p-[15px]">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[13.5px] font-semibold">Domenlar</span>
-        <button type="button" className="text-[11.5px] text-accent font-medium bg-transparent border-none cursor-pointer">
+        <button
+          type="button"
+          onClick={() => router.push("/domains")}
+          className="text-[11.5px] text-accent font-medium bg-transparent border-none cursor-pointer hover:underline"
+        >
           Barchasi →
         </button>
       </div>

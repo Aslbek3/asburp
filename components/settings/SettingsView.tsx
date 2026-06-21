@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { User, SlidersHorizontal, Bell, KeyRound, DatabaseBackup } from "lucide-react";
 import * as Switch from "@radix-ui/react-switch";
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
-import { useSettingsStore } from "@/store/settingsStore";
+import { ConfirmModal } from "@/components/shared/Modal";
+import { useSettingsStore, type ApiKeyData } from "@/store/settingsStore";
 import { useSettingsData } from "@/hooks/useMisc";
+import { useCan } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -23,6 +26,27 @@ function Field({ label, value }: { label: string; value: string }) {
       <div className="h-[36px] px-3 flex items-center bg-bg-2 border border-border-1 rounded-lg text-[12.5px] text-text-1">
         {value}
       </div>
+    </div>
+  );
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="mb-3">
+      <div className="text-[11.5px] font-medium text-text-2 mb-[6px]">{label}</div>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full h-[36px] px-3 bg-bg-2 border border-border-1 rounded-lg text-[12.5px] text-text-1 outline-none focus:border-accent"
+      />
     </div>
   );
 }
@@ -58,9 +82,31 @@ function ToggleRow({
 export function SettingsView() {
   const activeTab = useSettingsStore((s) => s.activeTab);
   const setActiveTab = useSettingsStore((s) => s.setActiveTab);
+  const profil = useSettingsStore((s) => s.profil);
+  const setProfil = useSettingsStore((s) => s.setProfil);
+  const panel = useSettingsStore((s) => s.panel);
+  const setPanel = useSettingsStore((s) => s.setPanel);
+  const bildirishnomalar = useSettingsStore((s) => s.bildirishnomalar);
+  const setNotification = useSettingsStore((s) => s.setNotification);
+  const apiKeys = useSettingsStore((s) => s.apiKeys);
+  const revokeApiKey = useSettingsStore((s) => s.revokeApiKey);
+  const restoreApiKey = useSettingsStore((s) => s.restoreApiKey);
+  const createApiKey = useSettingsStore((s) => s.createApiKey);
   const { data } = useSettingsData();
+  const canManage = useCan("manage");
+  const canDestroy = useCan("destructive");
+  const [revokeTarget, setRevokeTarget] = useState<ApiKeyData | null>(null);
 
   const save = () => toast.success("Sozlamalar saqlandi");
+
+  const confirmRevoke = () => {
+    if (!revokeTarget) return;
+    const key = revokeTarget;
+    revokeApiKey(key.id);
+    toast.error(`${key.name} bekor qilindi`, {
+      action: { label: "Bekor qilish", onClick: () => restoreApiKey(key) },
+    });
+  };
 
   return (
     <div className="grid grid-cols-1 tablet:grid-cols-[200px_1fr] gap-[14px] items-start">
@@ -85,7 +131,7 @@ export function SettingsView() {
       </Card>
 
       <Card padding="p-5">
-        {activeTab === "profil" && data && (
+        {activeTab === "profil" && (
           <>
             <SectionHeader title="Profil" desc="Shaxsiy ma'lumotlaringizni boshqaring." />
             <div className="flex items-center gap-3 mb-4">
@@ -100,56 +146,98 @@ export function SettingsView() {
                 Rasm yuklash
               </button>
             </div>
-            <Field label="Ism" value={data.profil.name} />
-            <Field label="Email" value={data.profil.email} />
-            <Field label="Role" value={data.profil.role} />
+            <TextField label="Ism" value={profil.name} onChange={(v) => setProfil({ name: v })} />
+            <TextField label="Email" value={profil.email} onChange={(v) => setProfil({ email: v })} />
+            <Field label="Role" value={profil.role} />
           </>
         )}
 
-        {activeTab === "panel" && data && (
+        {activeTab === "panel" && (
           <>
             <SectionHeader title="Panel" desc="CorePanel ko'rinishi va umumiy sozlamalar." />
-            <Field label="Panel nomi" value={data.panel.panelName} />
-            <Field label="Vaqt zonasi" value={data.panel.timezone} />
-            <Field label="Til" value={data.panel.language} />
+            <TextField label="Panel nomi" value={panel.panelName} onChange={(v) => setPanel({ panelName: v })} />
+            <TextField label="Vaqt zonasi" value={panel.timezone} onChange={(v) => setPanel({ timezone: v })} />
+            <TextField label="Til" value={panel.language} onChange={(v) => setPanel({ language: v })} />
           </>
         )}
 
-        {activeTab === "bildirishnomalar" && data && (
+        {activeTab === "bildirishnomalar" && (
           <>
             <SectionHeader title="Bildirishnomalar" desc="Qaysi hodisalar uchun xabar olishni tanlang." />
-            <ToggleRow label="Deploy" hint="Har bir deploy natijasi haqida xabar" checked={data.bildirishnomalar.deploy} onChange={() => toast.success("Saqlandi")} />
-            <ToggleRow label="Ogohlantirishlar" hint="Server va jarayon xatolari" checked={data.bildirishnomalar.alerts} onChange={() => toast.success("Saqlandi")} />
-            <ToggleRow label="SSL" hint="Sertifikat muddati tugashi haqida" checked={data.bildirishnomalar.ssl} onChange={() => toast.success("Saqlandi")} />
-            <ToggleRow label="Haftalik hisobot" hint="Har dushanba ertalab" checked={data.bildirishnomalar.weeklyReport} onChange={() => toast.success("Saqlandi")} />
+            <ToggleRow
+              label="Deploy"
+              hint="Har bir deploy natijasi haqida xabar"
+              checked={bildirishnomalar.deploy}
+              onChange={(v) => {
+                setNotification("deploy", v);
+                toast.success("Saqlandi");
+              }}
+            />
+            <ToggleRow
+              label="Ogohlantirishlar"
+              hint="Server va jarayon xatolari"
+              checked={bildirishnomalar.alerts}
+              onChange={(v) => {
+                setNotification("alerts", v);
+                toast.success("Saqlandi");
+              }}
+            />
+            <ToggleRow
+              label="SSL"
+              hint="Sertifikat muddati tugashi haqida"
+              checked={bildirishnomalar.ssl}
+              onChange={(v) => {
+                setNotification("ssl", v);
+                toast.success("Saqlandi");
+              }}
+            />
+            <ToggleRow
+              label="Haftalik hisobot"
+              hint="Har dushanba ertalab"
+              checked={bildirishnomalar.weeklyReport}
+              onChange={(v) => {
+                setNotification("weeklyReport", v);
+                toast.success("Saqlandi");
+              }}
+            />
           </>
         )}
 
-        {activeTab === "api" && data && (
+        {activeTab === "api" && (
           <>
             <SectionHeader title="API kalitlar" desc="CI/CD va tashqi integratsiyalar uchun tokenlar." />
-            {data.api.map((k) => (
+            {apiKeys.map((k) => (
               <div key={k.id} className="flex items-center justify-between py-3 border-b border-border-1">
                 <div>
                   <div className="text-[12.5px] font-medium font-mono">{k.name}</div>
                   <div className="text-[11px] text-text-3 mt-[2px]">Yaratilgan: {k.created} · {k.lastUsed}</div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toast.error(`${k.name} bekor qilindi`)}
-                  className="h-8 px-3 border border-border-1 rounded-lg bg-bg-1 text-[11.5px] font-medium cursor-pointer hover:bg-red-soft hover:text-red"
-                >
-                  Bekor qilish
-                </button>
+                {canDestroy && (
+                  <button
+                    type="button"
+                    onClick={() => setRevokeTarget(k)}
+                    className="h-8 px-3 border border-border-1 rounded-lg bg-bg-1 text-[11.5px] font-medium cursor-pointer hover:bg-red-soft hover:text-red"
+                  >
+                    Bekor qilish
+                  </button>
+                )}
               </div>
             ))}
-            <button
-              type="button"
-              onClick={() => toast.success("Yangi API kalit yaratildi")}
-              className="mt-3 h-9 px-3 border border-accent rounded-lg bg-accent text-white text-[12px] font-medium cursor-pointer"
-            >
-              Yangi kalit yaratish
-            </button>
+            {apiKeys.length === 0 && (
+              <div className="text-[12.5px] text-text-3 py-3">API kalitlar yo&apos;q.</div>
+            )}
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => {
+                  createApiKey();
+                  toast.success("Yangi API kalit yaratildi");
+                }}
+                className="mt-3 h-9 px-3 border border-accent rounded-lg bg-accent text-white text-[12px] font-medium cursor-pointer"
+              >
+                Yangi kalit yaratish
+              </button>
+            )}
           </>
         )}
 
@@ -159,23 +247,19 @@ export function SettingsView() {
             <Field label="Oxirgi backup" value={data.backup.lastBackup} />
             <Field label="Davriylik" value={data.backup.frequency} />
             <Field label="Saqlash muddati" value={data.backup.retention} />
-            <button
-              type="button"
-              onClick={() => toast.success("Backup ishga tushirildi")}
-              className="mt-1 h-9 px-3 border border-accent rounded-lg bg-accent text-white text-[12px] font-medium cursor-pointer"
-            >
-              Hozir backup qilish
-            </button>
+            {canManage && (
+              <button
+                type="button"
+                onClick={() => toast.success("Backup ishga tushirildi")}
+                className="mt-1 h-9 px-3 border border-accent rounded-lg bg-accent text-white text-[12px] font-medium cursor-pointer"
+              >
+                Hozir backup qilish
+              </button>
+            )}
           </>
         )}
 
         <div className="flex items-center justify-end gap-2 mt-5 pt-4 border-t border-border-1">
-          <button
-            type="button"
-            className="h-9 px-4 rounded-lg border border-border-1 bg-bg-1 text-text-2 text-[12.5px] font-medium cursor-pointer hover:bg-bg-2"
-          >
-            Bekor qilish
-          </button>
           <button
             type="button"
             onClick={save}
@@ -185,6 +269,16 @@ export function SettingsView() {
           </button>
         </div>
       </Card>
+
+      <ConfirmModal
+        open={!!revokeTarget}
+        onOpenChange={(open) => !open && setRevokeTarget(null)}
+        title="API kalitni bekor qilish"
+        description={`"${revokeTarget?.name}" kalitini bekor qilmoqchimisiz? Bu kalitdan foydalanayotgan integratsiyalar ishlamay qoladi.`}
+        danger
+        confirmLabel="Bekor qilish"
+        onConfirm={confirmRevoke}
+      />
     </div>
   );
 }

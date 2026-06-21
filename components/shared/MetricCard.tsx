@@ -46,7 +46,7 @@ export function MetricCard({
         {unit && <span className="text-[11.5px] text-text-3">{unit}</span>}
       </div>
       <ProgressBar pct={pct} color={barColor} className="mt-[11px]" />
-      <div className="mt-[7px] text-[10.5px] text-text-3">O'rtacha: {avg}</div>
+      <div className="mt-[7px] text-[10.5px] text-text-3">O&apos;rtacha: {avg}</div>
     </Card>
   );
 }

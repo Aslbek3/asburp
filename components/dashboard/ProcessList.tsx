@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FileText, RotateCw, Square } from "lucide-react";
 import { Card } from "@/components/shared/Card";
 import { IconButton } from "@/components/shared/IconButton";
 import { useProcesses } from "@/hooks/useDashboardData";
+import { useLogStore } from "@/store/logStore";
 import { toast } from "sonner";
 import type { ProcessStatus } from "@/lib/types";
 
@@ -20,8 +22,15 @@ const dotColor: Record<ProcessStatus, string> = {
 };
 
 export function ProcessList() {
+  const router = useRouter();
+  const setLogSearch = useLogStore((s) => s.setSearch);
   const { data } = useProcesses();
   const processes = (data ?? []).filter((p) => p.serverId === "contabo-de-01");
+
+  const openLogs = (processName: string) => {
+    setLogSearch(processName);
+    router.push("/logs");
+  };
 
   return (
     <Card padding="p-[15px]">
@@ -32,7 +41,11 @@ export function ProcessList() {
             {processes.length} ta
           </span>
         </div>
-        <button type="button" className="text-[11.5px] text-accent font-medium bg-transparent border-none cursor-pointer">
+        <button
+          type="button"
+          onClick={() => router.push("/servers/contabo-de-01")}
+          className="text-[11.5px] text-accent font-medium bg-transparent border-none cursor-pointer hover:underline"
+        >
           Barchasi →
         </button>
       </div>
@@ -52,7 +65,7 @@ export function ProcessList() {
             </span>
             <span className="text-[11px] text-text-2 w-[42px] text-right font-mono">{p.uptime}</span>
             <div className="flex gap-[3px]">
-              <IconButton icon={FileText} title="Log" />
+              <IconButton icon={FileText} title="Log" onClick={() => openLogs(p.name)} />
               <IconButton
                 icon={RotateCw}
                 title="Restart"

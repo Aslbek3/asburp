@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileText, RotateCw, Square } from "lucide-react";
+import { FileText, RotateCw, Square } from "lucide-react";
 import { Card } from "@/components/shared/Card";
 import { IconButton } from "@/components/shared/IconButton";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { LiveAreaChart } from "./LiveAreaChart";
 import { useServers } from "@/hooks/useServers";
 import { useProcesses } from "@/hooks/useDashboardData";
+import { useCan } from "@/lib/permissions";
+import { useLogStore } from "@/store/logStore";
 import { toast } from "sonner";
 import type { ProcessStatus } from "@/lib/types";
 
@@ -27,11 +29,18 @@ const diskFolders = [
 
 export function ServerDetailView({ id }: { id: string }) {
   const router = useRouter();
+  const setLogSearch = useLogStore((s) => s.setSearch);
   const { data: servers } = useServers();
   const { data: processes } = useProcesses();
   const server = (servers ?? []).find((s) => s.id === id);
   const procs = (processes ?? []).filter((p) => p.serverId === id);
   const [cursorOn, setCursorOn] = useState(true);
+  const canManage = useCan("manage");
+
+  const openLogs = (processName: string) => {
+    setLogSearch(processName);
+    router.push("/logs");
+  };
 
   useEffect(() => {
     const t = setInterval(() => setCursorOn((c) => !c), 600);
@@ -54,14 +63,6 @@ export function ServerDetailView({ id }: { id: string }) {
   return (
     <div className="flex flex-col gap-[14px]">
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => router.push("/servers")}
-          className="w-8 h-8 flex items-center justify-center border border-border-1 rounded-lg bg-bg-1 text-text-2 hover:bg-bg-2 cursor-pointer"
-        >
-          <ArrowLeft size={16} strokeWidth={1.9} />
-        </button>
-        <span className="text-[15px] font-semibold font-mono">{server.name}</span>
         <span
           className={`text-[10.5px] font-semibold px-2 py-[2px] rounded-full ${
             server.status === "online" ? "bg-green-soft text-green" : "bg-red-soft text-red"
@@ -109,9 +110,13 @@ export function ServerDetailView({ id }: { id: string }) {
               </span>
               <span className="text-[11px] text-text-2 w-[42px] text-right font-mono">{p.uptime}</span>
               <div className="flex gap-[3px]">
-                <IconButton icon={FileText} title="Log" />
-                <IconButton icon={RotateCw} title="Restart" hover="accent" onClick={() => toast.success(`${p.name} qayta ishga tushirildi`)} />
-                <IconButton icon={Square} title="Stop" hover="danger" onClick={() => toast.info(`${p.name} to'xtatildi`)} />
+                <IconButton icon={FileText} title="Log" onClick={() => openLogs(p.name)} />
+                {canManage && (
+                  <>
+                    <IconButton icon={RotateCw} title="Restart" hover="accent" onClick={() => toast.success(`${p.name} qayta ishga tushirildi`)} />
+                    <IconButton icon={Square} title="Stop" hover="danger" onClick={() => toast.info(`${p.name} to'xtatildi`)} />
+                  </>
+                )}
               </div>
             </div>
           );

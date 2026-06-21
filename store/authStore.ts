@@ -1,3 +1,4 @@
+import { useCallback, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -33,3 +34,13 @@ export const useAuthStore = create<AuthState>()(
     { name: "corepanel-auth" },
   ),
 );
+
+export function useAuthHydrated() {
+  const subscribe = useCallback(
+    (onChange: () => void) => useAuthStore.persist.onFinishHydration(onChange),
+    [],
+  );
+  const getSnapshot = useCallback(() => useAuthStore.persist.hasHydrated(), []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
+}

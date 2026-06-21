@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, ChevronDown, RotateCcw } from "lucide-react";
+import { ArrowUp, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
+import { Dropdown } from "@/components/shared/Dropdown";
 import { deployLog as deployLogMock, deployHistory } from "@/lib/mock-data";
+import { useProjects } from "@/hooks/useProjects";
+import { useCan } from "@/lib/permissions";
 import type { DeployPipelineStep, DeployResult, LogLine } from "@/lib/types";
+
+const branchOptions = ["main", "develop", "staging"];
 
 const initialPipeline: DeployPipelineStep[] = [
   { id: "pl1", label: "Git pull", status: "done" },
@@ -28,10 +33,15 @@ const lineColor: Record<LogLine["level"], string> = {
 };
 
 export function DeployClient() {
+  const { data: projects } = useProjects();
   const [pipeline, setPipeline] = useState<DeployPipelineStep[]>(initialPipeline);
   const [log, setLog] = useState<LogLine[]>(deployLogMock);
   const [running, setRunning] = useState(false);
+  const [project, setProject] = useState("navbat-web");
+  const [branch, setBranch] = useState("main");
   const logRef = useRef<HTMLDivElement>(null);
+  const canManage = useCan("manage");
+  const projectOptions = (projects ?? []).map((p) => p.name);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
@@ -61,7 +71,7 @@ export function DeployClient() {
         clearInterval(interval);
         setPipeline((prev) => prev.map((s) => ({ ...s, status: "done" })));
         setRunning(false);
-        toast.success("navbat-web muvaffaqiyatli deploy qilindi");
+        toast.success(`${project} muvaffaqiyatli deploy qilindi`);
       }
     }, 350);
   };
@@ -72,32 +82,28 @@ export function DeployClient() {
         <Card padding="p-[14px]" className="flex items-end gap-3 flex-wrap">
           <div className="flex-1 min-w-[140px]">
             <div className="text-[10.5px] text-text-3 uppercase tracking-[0.05em] mb-[6px]">Loyiha</div>
-            <button className="w-full flex items-center justify-between h-[34px] px-[11px] border border-border-1 rounded-lg bg-bg-2 text-text-1 text-[12.5px] font-medium cursor-pointer font-mono">
-              <span>navbat-web</span>
-              <ChevronDown size={13} className="text-text-3" />
-            </button>
+            <Dropdown options={projectOptions} value={project} onChange={setProject} className="w-full font-mono" />
           </div>
           <div className="flex-1 min-w-[140px]">
             <div className="text-[10.5px] text-text-3 uppercase tracking-[0.05em] mb-[6px]">Branch</div>
-            <button className="w-full flex items-center justify-between h-[34px] px-[11px] border border-border-1 rounded-lg bg-bg-2 text-text-1 text-[12.5px] font-medium cursor-pointer font-mono">
-              <span>main</span>
-              <ChevronDown size={13} className="text-text-3" />
-            </button>
+            <Dropdown options={branchOptions} value={branch} onChange={setBranch} className="w-full font-mono" />
           </div>
-          <button
-            type="button"
-            onClick={runDeploy}
-            disabled={running}
-            className="flex items-center gap-[7px] h-[34px] px-4 border border-accent rounded-lg bg-accent text-white text-[12.5px] font-medium cursor-pointer disabled:opacity-60"
-          >
-            <ArrowUp size={14} strokeWidth={1.9} />
-            <span>{running ? "Deploy qilinmoqda..." : "Deploy"}</span>
-          </button>
+          {canManage && (
+            <button
+              type="button"
+              onClick={runDeploy}
+              disabled={running}
+              className="flex items-center gap-[7px] h-[34px] px-4 border border-accent rounded-lg bg-accent text-white text-[12.5px] font-medium cursor-pointer disabled:opacity-60"
+            >
+              <ArrowUp size={14} strokeWidth={1.9} />
+              <span>{running ? "Deploy qilinmoqda..." : "Deploy"}</span>
+            </button>
+          )}
         </Card>
 
         <Card padding="p-[18px_15px]">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[13.5px] font-semibold">Pipeline · navbat-web</span>
+            <span className="text-[13.5px] font-semibold">Pipeline · {project}</span>
             <span className="text-[11px] text-text-3 font-mono">#284 · 2m 14s</span>
           </div>
           <div className="flex items-center">
@@ -170,7 +176,7 @@ export function DeployClient() {
                 </div>
                 <div className="text-[10.5px] text-text-3 mt-[2px]">{h.who} · {h.time}</div>
               </div>
-              {h.canRollback && (
+              {h.canRollback && canManage && (
                 <button
                   type="button"
                   title="Rollback"
@@ -186,7 +192,7 @@ export function DeployClient() {
         <div className="mt-3 p-[11px] bg-bg-2 border border-border-1 rounded-[9px]">
           <div className="text-[10.5px] text-text-3 uppercase tracking-[0.05em] mb-[6px]">Webhook URL</div>
           <div className="text-[11px] font-mono text-text-2 break-all">
-            https://corepanel.uz/api/webhooks/navbat-web
+            https://corepanel.uz/api/webhooks/{project}
           </div>
         </div>
       </Card>

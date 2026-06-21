@@ -3,8 +3,11 @@
 import { Bot, Globe2, Plug, Plus, RotateCw, ScrollText, Rocket, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
+import { Skeleton } from "@/components/shared/Skeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { useProjects } from "@/hooks/useProjects";
 import { useProjectStore } from "@/store/projectStore";
+import { useCan } from "@/lib/permissions";
 import type { ProjectStatus, ProjectType } from "@/lib/types";
 
 const typeMap: Record<ProjectType, { icon: typeof Bot; bg: string; color: string; label: string }> = {
@@ -20,16 +23,17 @@ const statusMap: Record<ProjectStatus, { bg: string; color: string; dot: string;
 };
 
 const actions = [
-  { icon: RotateCw, title: "Restart" },
-  { icon: ScrollText, title: "Logs" },
-  { icon: Rocket, title: "Deploy" },
-  { icon: Settings, title: "Sozlamalar" },
+  { icon: RotateCw, title: "Restart", manageOnly: true },
+  { icon: ScrollText, title: "Logs", manageOnly: false },
+  { icon: Rocket, title: "Deploy", manageOnly: true },
+  { icon: Settings, title: "Sozlamalar", manageOnly: true },
 ];
 
 export function ProjectCardGrid() {
-  const { data } = useProjects();
+  const { data, isLoading } = useProjects();
   const search = useProjectStore((s) => s.search);
   const typeFilter = useProjectStore((s) => s.typeFilter);
+  const canManage = useCan("manage");
 
   const filtered = (data ?? []).filter((p) => {
     const matchesType = typeFilter === "all" || p.type === typeFilter;
@@ -39,6 +43,29 @@ export function ProjectCardGrid() {
       p.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()));
     return matchesType && matchesSearch;
   });
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-[14px]">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Card key={i} padding="p-[15px]">
+            <div className="flex items-center gap-[10px] mb-[11px]">
+              <Skeleton className="w-[34px] h-[34px] rounded-[9px]" />
+              <div className="flex-1">
+                <Skeleton className="h-4 w-24 mb-[6px]" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            </div>
+            <Skeleton className="h-7 w-full" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (filtered.length === 0) {
+    return <EmptyState title="Loyiha topilmadi" description="Qidiruv yoki filtr shartlariga mos loyiha yo'q." />;
+  }
 
   return (
     <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-[14px]">
@@ -77,32 +104,36 @@ export function ProjectCardGrid() {
             </div>
             <div className="text-[10.5px] text-text-3 mb-[13px]">Oxirgi deploy: {pr.lastDeploy}</div>
             <div className="grid grid-cols-4 gap-[5px] pt-3 border-t border-border-1">
-              {actions.map((ac) => (
-                <button
-                  key={ac.title}
-                  type="button"
-                  title={ac.title}
-                  onClick={() => toast.info(`${pr.name}: ${ac.title}`)}
-                  className="flex items-center justify-center h-7 border border-border-1 rounded-[7px] bg-bg-1 text-text-2 cursor-pointer hover:bg-bg-2 hover:text-text-1"
-                >
-                  <ac.icon size={13} strokeWidth={1.8} />
-                </button>
-              ))}
+              {actions
+                .filter((ac) => !ac.manageOnly || canManage)
+                .map((ac) => (
+                  <button
+                    key={ac.title}
+                    type="button"
+                    title={ac.title}
+                    onClick={() => toast.info(`${pr.name}: ${ac.title}`)}
+                    className="flex items-center justify-center h-7 border border-border-1 rounded-[7px] bg-bg-1 text-text-2 cursor-pointer hover:bg-bg-2 hover:text-text-1"
+                  >
+                    <ac.icon size={13} strokeWidth={1.8} />
+                  </button>
+                ))}
             </div>
           </Card>
         );
       })}
 
-      <button
-        type="button"
-        onClick={() => toast.info("Yangi loyiha qo'shish oynasi ochiladi")}
-        className="flex flex-col items-center justify-center gap-[9px] min-h-[170px] bg-transparent border-[1.5px] border-dashed border-border-2 rounded-xl cursor-pointer text-text-3 hover:border-accent hover:text-accent"
-      >
-        <div className="w-10 h-10 rounded-full bg-bg-2 flex items-center justify-center">
-          <Plus size={20} strokeWidth={1.8} />
-        </div>
-        <span className="text-[12.5px] font-medium">Yangi loyiha qo&apos;shish</span>
-      </button>
+      {canManage && (
+        <button
+          type="button"
+          onClick={() => toast.info("Yangi loyiha qo'shish oynasi ochiladi")}
+          className="flex flex-col items-center justify-center gap-[9px] min-h-[170px] bg-transparent border-[1.5px] border-dashed border-border-2 rounded-xl cursor-pointer text-text-3 hover:border-accent hover:text-accent"
+        >
+          <div className="w-10 h-10 rounded-full bg-bg-2 flex items-center justify-center">
+            <Plus size={20} strokeWidth={1.8} />
+          </div>
+          <span className="text-[12.5px] font-medium">Yangi loyiha qo&apos;shish</span>
+        </button>
+      )}
     </div>
   );
 }

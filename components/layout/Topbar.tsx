@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Search } from "lucide-react";
+import { ChevronRight, Menu, Search } from "lucide-react";
 import { pageTitles } from "@/lib/nav";
 import { useUiStore } from "@/store/uiStore";
 import { useTopbarStore } from "@/store/topbarStore";
 import { useIsMobile } from "@/hooks/useMediaQuery";
+import { useServers } from "@/hooks/useServers";
 import { cn } from "@/lib/utils";
 
 export function Topbar() {
@@ -14,9 +16,11 @@ export function Topbar() {
   const setCmdkOpen = useUiStore((s) => s.setCmdkOpen);
   const isMobile = useIsMobile();
   const actions = useTopbarStore((s) => s.actions);
-  const title =
-    pageTitles[pathname] ??
-    (pathname.startsWith("/servers/") ? "Server tafsiloti" : "CorePanel");
+  const { data: servers } = useServers();
+  const isServerDetail = pathname.startsWith("/servers/");
+  const serverId = isServerDetail ? pathname.split("/")[2] : null;
+  const serverName = (servers ?? []).find((s) => s.id === serverId)?.name ?? serverId;
+  const title = pageTitles[pathname] ?? (isServerDetail ? "Server tafsiloti" : "CorePanel");
   const showLive = pathname !== "/settings";
 
   return (
@@ -32,9 +36,19 @@ export function Topbar() {
             <Menu size={17} strokeWidth={1.9} />
           </button>
         )}
-        <h1 className="text-[15px] font-semibold m-0 tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">
-          {title}
-        </h1>
+        {isServerDetail ? (
+          <h1 className="flex items-center gap-[6px] text-[15px] font-semibold m-0 tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">
+            <Link href="/servers" className="text-text-3 hover:text-text-1 font-medium">
+              Serverlar
+            </Link>
+            <ChevronRight size={14} className="text-text-3 flex-none" />
+            <span className="font-mono">{serverName}</span>
+          </h1>
+        ) : (
+          <h1 className="text-[15px] font-semibold m-0 tracking-[-0.01em] whitespace-nowrap overflow-hidden text-ellipsis">
+            {title}
+          </h1>
+        )}
         {showLive && (
           <div className="flex items-center gap-[5px] py-[3px] pl-[7px] pr-2 bg-green-soft rounded-full">
             <span className="w-[6px] h-[6px] rounded-full bg-green cp-pulse" />

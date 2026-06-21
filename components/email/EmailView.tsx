@@ -1,20 +1,30 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Plus, ExternalLink, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
+import { Dropdown } from "@/components/shared/Dropdown";
 import { ProgressBar } from "@/components/shared/ProgressBar";
+import { SkeletonRow } from "@/components/shared/Skeleton";
 import { useEmailAccounts } from "@/hooks/useMisc";
+import { useCan } from "@/lib/permissions";
 
 export function EmailView() {
-  const { data } = useEmailAccounts();
+  const { data, isLoading } = useEmailAccounts();
+  const canManage = useCan("manage");
+  const domains = useMemo(
+    () => Array.from(new Set((data ?? []).map((a) => a.address.split("@")[1]))),
+    [data],
+  );
+  const [domain, setDomain] = useState<string | null>(null);
+  const activeDomain = domain ?? domains[0];
+  const filtered = (data ?? []).filter((a) => a.address.endsWith(`@${activeDomain}`));
 
   return (
     <div className="flex flex-col gap-[14px]">
       <div className="flex items-center justify-between">
-        <button className="flex items-center gap-2 h-[34px] px-3 border border-border-1 rounded-lg bg-bg-2 text-[12px] cursor-pointer">
-          navbat.uz
-        </button>
+        <Dropdown options={domains} value={activeDomain ?? ""} onChange={setDomain} />
         <button
           type="button"
           onClick={() => toast.info("Roundcube webmail ochiladi")}
@@ -36,7 +46,8 @@ export function EmailView() {
             </tr>
           </thead>
           <tbody>
-            {(data ?? []).map((acc) => {
+            {isLoading && Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} cols={4} />)}
+            {filtered.map((acc) => {
               const pct = Math.round((acc.usedMb / acc.quotaMb) * 100);
               const color = pct >= 85 ? "red" : pct >= 65 ? "amber" : "green";
               return (
@@ -55,30 +66,34 @@ export function EmailView() {
                   </td>
                   <td className="px-4 py-3 text-text-2">{acc.forwarding}</td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      title="Sozlash"
-                      onClick={() => toast.info(`${acc.address} sozlamalari`)}
-                      className="w-[26px] h-[26px] inline-flex items-center justify-center border border-border-1 rounded-[7px] bg-bg-1 text-text-2 cursor-pointer hover:bg-bg-2"
-                    >
-                      <Settings size={13} strokeWidth={1.8} />
-                    </button>
+                    {canManage && (
+                      <button
+                        type="button"
+                        title="Sozlash"
+                        onClick={() => toast.info(`${acc.address} sozlamalari`)}
+                        className="w-[26px] h-[26px] inline-flex items-center justify-center border border-border-1 rounded-[7px] bg-bg-1 text-text-2 cursor-pointer hover:bg-bg-2"
+                      >
+                        <Settings size={13} strokeWidth={1.8} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
             })}
-            <tr>
-              <td colSpan={4} className="px-4 py-3">
-                <button
-                  type="button"
-                  onClick={() => toast.info("Yangi email account qo'shish")}
-                  className="flex items-center gap-2 text-accent text-[12px] font-medium bg-transparent border-none cursor-pointer"
-                >
-                  <Plus size={14} strokeWidth={1.9} />
-                  Yangi account
-                </button>
-              </td>
-            </tr>
+            {canManage && (
+              <tr>
+                <td colSpan={4} className="px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => toast.info("Yangi email account qo'shish")}
+                    className="flex items-center gap-2 text-accent text-[12px] font-medium bg-transparent border-none cursor-pointer"
+                  >
+                    <Plus size={14} strokeWidth={1.9} />
+                    Yangi account
+                  </button>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </Card>

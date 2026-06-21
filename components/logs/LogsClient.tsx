@@ -1,10 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { ChevronDown, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/shared/Card";
+import { Skeleton } from "@/components/shared/Skeleton";
+import { Dropdown } from "@/components/shared/Dropdown";
 import { useLogLines } from "@/hooks/useMisc";
+import { useServers } from "@/hooks/useServers";
+import { useProjects } from "@/hooks/useProjects";
 import { useLogStore } from "@/store/logStore";
 import { cn } from "@/lib/utils";
 import type { LogLine } from "@/lib/types";
@@ -25,11 +29,19 @@ const levelTextColor: Record<LogLine["level"], string> = {
 };
 
 export function LogsClient() {
-  const { data } = useLogLines();
+  const { data, isLoading } = useLogLines();
+  const { data: servers } = useServers();
+  const { data: projects } = useProjects();
   const level = useLogStore((s) => s.level);
   const setLevel = useLogStore((s) => s.setLevel);
   const search = useLogStore((s) => s.search);
   const setSearch = useLogStore((s) => s.setSearch);
+  const vps = useLogStore((s) => s.vps);
+  const setVps = useLogStore((s) => s.setVps);
+  const project = useLogStore((s) => s.project);
+  const setProject = useLogStore((s) => s.setProject);
+  const serverOptions = (servers ?? []).map((s) => s.id);
+  const projectOptions = ["Barchasi", ...(projects ?? []).map((p) => p.name)];
   const { filtered, regexError } = useMemo(() => {
     const lines = data ?? [];
     let regex: RegExp | null = null;
@@ -52,14 +64,8 @@ export function LogsClient() {
   return (
     <div className="flex flex-col gap-[14px]">
       <Card padding="p-[12px_14px]" className="flex items-center gap-2 flex-wrap">
-        <button className="flex items-center gap-2 h-[32px] px-3 border border-border-1 rounded-lg bg-bg-2 text-[12px] font-mono cursor-pointer">
-          contabo-de-01
-          <ChevronDown size={13} className="text-text-3" />
-        </button>
-        <button className="flex items-center gap-2 h-[32px] px-3 border border-border-1 rounded-lg bg-bg-2 text-[12px] cursor-pointer">
-          Barchasi
-          <ChevronDown size={13} className="text-text-3" />
-        </button>
+        <Dropdown options={serverOptions} value={vps} onChange={setVps} className="font-mono" />
+        <Dropdown options={projectOptions} value={project} onChange={setProject} />
         <div className="flex gap-1 bg-bg-2 p-[3px] rounded-[9px] border border-border-1">
           {levelOptions.map((opt) => (
             <button
@@ -81,7 +87,7 @@ export function LogsClient() {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Regex qidirish..."
           className={cn(
-            "flex-1 min-w-[140px] h-[32px] px-3 border rounded-lg bg-bg-2 text-[12px] outline-none",
+            "flex-1 min-w-[140px] h-[32px] px-3 border rounded-lg bg-bg-2 text-[12px] outline-none focus:border-accent",
             regexError ? "border-red" : "border-border-1",
           )}
         />
@@ -96,6 +102,10 @@ export function LogsClient() {
       </Card>
 
       <div className="bg-[#0f1117] border border-border-1 rounded-[11px] p-[14px] font-mono text-[11.5px] leading-[1.8] max-h-[560px] overflow-y-auto">
+        {isLoading &&
+          Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-[15px] w-full max-w-[480px] mb-[6px] bg-[#1a1d24]" />
+          ))}
         {filtered.map((l) => (
           <div key={l.id} className="flex gap-[10px]">
             <span className="text-[#5b6478] flex-none">{l.ts}</span>

@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { AlertTriangle, AlertCircle, Info, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/shared/Card";
 import { useAlerts } from "@/hooks/useDashboardData";
+import { cn } from "@/lib/utils";
 import type { AlertLevel } from "@/lib/types";
 
 const levelMap: Record<AlertLevel, { icon: typeof AlertTriangle; bg: string; color: string }> = {
@@ -13,6 +15,7 @@ const levelMap: Record<AlertLevel, { icon: typeof AlertTriangle; bg: string; col
 };
 
 export function AlertsFeed() {
+  const router = useRouter();
   const { data } = useAlerts();
   const newCount = (data ?? []).filter((a) => a.level === "error" || a.level === "warning").length;
 
@@ -28,7 +31,14 @@ export function AlertsFeed() {
         const m = levelMap[a.level];
         const Icon = m.icon;
         return (
-          <div key={a.id} className="flex gap-[10px] py-[9px] border-b border-border-1 last:border-b-0">
+          <div
+            key={a.id}
+            onClick={a.href ? () => router.push(a.href!) : undefined}
+            className={cn(
+              "flex gap-[10px] py-[9px] border-b border-border-1 last:border-b-0",
+              a.href && "cursor-pointer rounded-[7px] hover:bg-bg-2 -mx-[6px] px-[6px]",
+            )}
+          >
             <div className={`w-[26px] h-[26px] rounded-[7px] flex items-center justify-center flex-none ${m.bg}`}>
               <Icon size={14} strokeWidth={1.9} className={m.color} />
             </div>

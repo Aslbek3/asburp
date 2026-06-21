@@ -16,8 +16,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("corepanel123");
   const [code, setCode] = useState("");
   const [remember, setRemember] = useState(true);
+  const [touched, setTouched] = useState(false);
+
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const passwordValid = password.length >= 6;
+  const formValid = emailValid && passwordValid;
 
   const onLogin = () => {
+    setTouched(true);
+    if (!formValid) return;
     login();
     router.push("/");
   };
@@ -44,21 +51,44 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="bg-bg-1 border border-border-1 rounded-xl p-[22px]">
-          <Field label="Email" icon={Mail}>
-            <input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 border-none outline-none bg-transparent text-[13px] text-text-1 font-mono"
-            />
-          </Field>
+        <form
+          className="bg-bg-1 border border-border-1 rounded-xl p-[22px]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onLogin();
+          }}
+        >
+          <div className="mb-[14px]">
+            <div className="text-[11.5px] font-medium text-text-2 mb-[6px]">Email</div>
+            <div
+              className={cn(
+                "flex items-center gap-[9px] h-[38px] px-3 bg-bg-2 border rounded-[9px] focus-within:border-accent",
+                touched && !emailValid ? "border-red" : "border-border-1",
+              )}
+            >
+              <Mail size={15} strokeWidth={1.7} className="text-text-3 shrink-0" />
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 border-none outline-none bg-transparent text-[13px] text-text-1 font-mono"
+              />
+            </div>
+            {touched && !emailValid && (
+              <div className="text-[11px] text-red mt-[5px]">To&apos;g&apos;ri email manzil kiriting</div>
+            )}
+          </div>
 
           <div className="mb-[14px]">
             <div className="flex items-center justify-between mb-[6px]">
               <span className="text-[11.5px] font-medium text-text-2">Parol</span>
               <span className="text-[11px] text-accent cursor-pointer">Unutdingizmi?</span>
             </div>
-            <div className="flex items-center gap-[9px] h-[38px] px-3 bg-bg-2 border border-border-1 rounded-[9px]">
+            <div
+              className={cn(
+                "flex items-center gap-[9px] h-[38px] px-3 bg-bg-2 border rounded-[9px] focus-within:border-accent",
+                touched && !passwordValid ? "border-red" : "border-border-1",
+              )}
+            >
               <Lock size={15} strokeWidth={1.7} className="text-text-3 shrink-0" />
               <input
                 type="password"
@@ -67,13 +97,16 @@ export default function LoginPage() {
                 className="flex-1 border-none outline-none bg-transparent text-[13px] text-text-1 font-mono"
               />
             </div>
+            {touched && !passwordValid && (
+              <div className="text-[11px] text-red mt-[5px]">Parol kamida 6 belgidan iborat bo&apos;lishi kerak</div>
+            )}
           </div>
 
           <div className="mb-[18px]">
             <div className="text-[11.5px] font-medium text-text-2 mb-[6px]">
               2FA kod <span className="text-text-3 font-normal">(ixtiyoriy)</span>
             </div>
-            <div className="flex items-center gap-[9px] h-[38px] px-3 bg-bg-2 border border-border-1 rounded-[9px]">
+            <div className="flex items-center gap-[9px] h-[38px] px-3 bg-bg-2 border border-border-1 rounded-[9px] focus-within:border-accent">
               <ShieldCheck size={15} strokeWidth={1.7} className="text-text-3 shrink-0" />
               <input
                 value={code}
@@ -85,10 +118,15 @@ export default function LoginPage() {
           </div>
 
           <label className="flex items-center gap-2 mb-[18px] cursor-pointer">
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+              className="sr-only peer"
+            />
             <span
-              onClick={() => setRemember((r) => !r)}
               className={cn(
-                "w-4 h-4 rounded-[4px] flex items-center justify-center",
+                "w-4 h-4 rounded-[4px] flex items-center justify-center peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-accent peer-focus-visible:outline-offset-1",
                 remember ? "bg-accent" : "bg-bg-3 border border-border-2",
               )}
             >
@@ -98,37 +136,16 @@ export default function LoginPage() {
           </label>
 
           <button
-            type="button"
-            onClick={onLogin}
+            type="submit"
             className="w-full h-10 border-none rounded-[9px] bg-accent text-white text-[13.5px] font-medium cursor-pointer"
           >
             Kirish
           </button>
-        </div>
+        </form>
 
         <div className="text-center text-[11px] text-text-3 mt-4">
           Self-hosted · Contabo VPS · Germaniya
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  icon: Icon,
-  children,
-}: {
-  label: string;
-  icon: typeof Mail;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mb-[14px]">
-      <div className="text-[11.5px] font-medium text-text-2 mb-[6px]">{label}</div>
-      <div className="flex items-center gap-[9px] h-[38px] px-3 bg-bg-2 border border-border-1 rounded-[9px]">
-        <Icon size={15} strokeWidth={1.7} className="text-text-3 shrink-0" />
-        {children}
       </div>
     </div>
   );

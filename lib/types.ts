@@ -65,6 +65,7 @@ export interface AlertRow {
   level: AlertLevel;
   text: string;
   time: string;
+  href?: string;
 }
 
 export interface DomainRow {

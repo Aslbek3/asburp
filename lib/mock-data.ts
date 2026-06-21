@@ -151,10 +151,10 @@ export const deploys: DeployRow[] = [
 ];
 
 export const alerts: AlertRow[] = [
-  { id: "a1", level: "error", text: "analytics-api jarayoni 14 marta qayta ishga tushdi", time: "6 soat oldin" },
-  { id: "a2", level: "warning", text: "contabo-de-01 disk hajmi 80% dan oshdi", time: "1 kun oldin" },
-  { id: "a3", level: "warning", text: "shop.uz SSL sertifikati 12 kundan keyin tugaydi", time: "1 kun oldin" },
-  { id: "a4", level: "info", text: "navbat-web muvaffaqiyatli deploy qilindi", time: "18 daqiqa oldin" },
+  { id: "a1", level: "error", text: "analytics-api jarayoni 14 marta qayta ishga tushdi", time: "6 soat oldin", href: "/servers/contabo-de-01" },
+  { id: "a2", level: "warning", text: "contabo-de-01 disk hajmi 80% dan oshdi", time: "1 kun oldin", href: "/servers/contabo-de-01" },
+  { id: "a3", level: "warning", text: "shop.uz SSL sertifikati 12 kundan keyin tugaydi", time: "1 kun oldin", href: "/ssl" },
+  { id: "a4", level: "info", text: "navbat-web muvaffaqiyatli deploy qilindi", time: "18 daqiqa oldin", href: "/deploy" },
 ];
 
 export const domainRows: DomainRow[] = [
