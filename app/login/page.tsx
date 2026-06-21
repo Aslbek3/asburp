@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, ShieldCheck, Moon, Sun, Check } from "lucide-react";
+import { User, Lock, ShieldCheck, Moon, Sun, Check } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useUiStore } from "@/store/uiStore";
 import { cn } from "@/lib/utils";
@@ -12,21 +12,41 @@ export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const theme = useUiStore((s) => s.theme);
   const toggleTheme = useUiStore((s) => s.toggleTheme);
-  const [email, setEmail] = useState("admin@corepanel.uz");
-  const [password, setPassword] = useState("corepanel123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [remember, setRemember] = useState(true);
   const [touched, setTouched] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState("");
 
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const usernameValid = username.trim().length > 0;
   const passwordValid = password.length >= 6;
-  const formValid = emailValid && passwordValid;
+  const formValid = usernameValid && passwordValid;
 
-  const onLogin = () => {
+  const onLogin = async () => {
     setTouched(true);
+    setServerError("");
     if (!formValid) return;
-    login();
-    router.push("/");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setServerError(data.error ?? "Login yoki parol xato");
+        return;
+      }
+      login();
+      router.push("/");
+    } catch {
+      setServerError("Serverga ulanib bo'lmadi");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -59,29 +79,30 @@ export default function LoginPage() {
           }}
         >
           <div className="mb-[14px]">
-            <div className="text-[11.5px] font-medium text-text-2 mb-[6px]">Email</div>
+            <div className="text-[11.5px] font-medium text-text-2 mb-[6px]">Login</div>
             <div
               className={cn(
                 "flex items-center gap-[9px] h-[38px] px-3 bg-bg-2 border rounded-[9px] focus-within:border-accent",
-                touched && !emailValid ? "border-red" : "border-border-1",
+                touched && !usernameValid ? "border-red" : "border-border-1",
               )}
             >
-              <Mail size={15} strokeWidth={1.7} className="text-text-3 shrink-0" />
+              <User size={15} strokeWidth={1.7} className="text-text-3 shrink-0" />
               <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                placeholder="aslbek"
                 className="flex-1 border-none outline-none bg-transparent text-[13px] text-text-1 font-mono"
               />
             </div>
-            {touched && !emailValid && (
-              <div className="text-[11px] text-red mt-[5px]">To&apos;g&apos;ri email manzil kiriting</div>
+            {touched && !usernameValid && (
+              <div className="text-[11px] text-red mt-[5px]">Login kiriting</div>
             )}
           </div>
 
           <div className="mb-[14px]">
             <div className="flex items-center justify-between mb-[6px]">
               <span className="text-[11.5px] font-medium text-text-2">Parol</span>
-              <span className="text-[11px] text-accent cursor-pointer">Unutdingizmi?</span>
             </div>
             <div
               className={cn(
@@ -94,6 +115,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 className="flex-1 border-none outline-none bg-transparent text-[13px] text-text-1 font-mono"
               />
             </div>
@@ -135,11 +157,18 @@ export default function LoginPage() {
             <span className="text-[12px] text-text-2">Meni eslab qol</span>
           </label>
 
+          {serverError && (
+            <div className="text-[12px] text-red bg-red-soft border border-red/20 rounded-[8px] px-3 py-2 mb-[14px]">
+              {serverError}
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full h-10 border-none rounded-[9px] bg-accent text-white text-[13.5px] font-medium cursor-pointer"
+            disabled={submitting}
+            className="w-full h-10 border-none rounded-[9px] bg-accent text-white text-[13.5px] font-medium cursor-pointer disabled:opacity-60"
           >
-            Kirish
+            {submitting ? "Tekshirilmoqda..." : "Kirish"}
           </button>
         </form>
 

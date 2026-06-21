@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # remote vps connection list (ips/hostnames)
 /data/vps-connections.json
